@@ -73,6 +73,13 @@ func (tr *Trade) CashFlow() float64 {
 	}
 }
 
+type RoundTrade struct {
+	Buy, Sell		*Trade
+	AverageCost		float64
+}
+
+
+
 type Deal struct {
 	Stock, Exchange, Currency		string
 	Trades				[]Trade
@@ -139,6 +146,15 @@ func (dl *Deal) PrintAll() {
 	fmt.Printf("Deal akcji: %s\tgiełda: %s\twaluta: %s\n", dl.Stock, dl.Exchange, dl.Currency)
 	fmt.Printf("Posiadane akcje: %d\n", dl.countStock())
 	fmt.Printf("Wynik finansowy: %.2f %s\n\n", dl.sumCashFlow(), dl.Currency)
+}
+
+func (dl *Deal) PrintRowIfSold() (float64, string) {
+	if dl.countStock() == 0 {
+		fmt.Printf("%.2f\t\t%s\t\t%s\n",  dl.sumCashFlow(), dl.Currency, dl.Stock)
+		return dl.sumCashFlow(), dl.Currency
+	}
+	
+	return 0, dl.Currency
 }
 
 func main() {
@@ -222,9 +238,20 @@ func main() {
 		deal.PrintAll()
 	}
 
+	fmt.Printf("Deale zakończone (stan akcji == 0)\n\nWynik\t\twwaluta\t\takcja\n")
+	finishedCashFlow := map[string]float64{}
+	var sum float64
+	var curr string
+	for _, deal := range(deals) {
+		sum, curr = deal.PrintRowIfSold()
+		finishedCashFlow[curr] += sum
+	}
 
-
+	fmt.Printf("\nWynik zamkniętych transakcji:\n")
+	for currency, score := range(finishedCashFlow) {
+		fmt.Printf("%.2f\t%s\n", score, currency)
+	}
+	
     fmt.Printf("\n\nkoniec#!")
-    var empty string
-    fmt.Scan(&empty)
+    fmt.Scanln()
 }

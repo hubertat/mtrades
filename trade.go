@@ -19,25 +19,63 @@ type Trade struct {
 	Time			time.Time
 }
 
-func NewTrade(input string) (tr Trade) {
+func NewTrade(input string) (tr Trade, err error) {
 	inSlice := strings.Split(input, ";")
-	
+
+	switch len(inSlice) {	
+	case 1:
+		return
+	case 0:
+		return
+	case 9:
+		err = tr.parseLineMbank(inSlice)
+	case 14:
+		err = tr.parseLineMdm(inSlice)
+	default:
+		err = fmt.Errorf("Nieobsługiwany format pliku.")
+	} 
+
+	return
+}
+
+func (tr *Trade) parseLineMbank(inSlice []string) error {
+	if len(inSlice) != 9 {
+		return fmt.Errorf("Wrong slice len, parsing Trade failed.")
+	}
+
 	tr.checkStates(inSlice[0])
-	
 	tr.Stock = inSlice[1]
 	tr.Exchange = inSlice[2]
 	
-	if (inSlice[3] == "K") {
-		tr.Buy = true
-	}
+	tr.Buy = inSlice[3] == "K"
 
 	tr.Count, _ = strconv.Atoi(strings.Replace(inSlice[4], " ", "", -1))
 	tr.Price, _ = strconv.ParseFloat(strings.Replace(inSlice[5], ",", ".", 1), 64)
 	tr.Currency = inSlice[6]
 
-	tr.Time, _ = time.Parse("02.01.2006 15:04:05", inSlice[len(inSlice)-1])
+	tr.Time, _ = time.Parse("02.01.2006 15:04:05", inSlice[8])
 
-	return
+	return nil
+}
+
+func (tr *Trade) parseLineMdm(inSlice []string) error {
+	if len(inSlice) != 14 {
+		return fmt.Errorf("Wrong slice len, parsing Trade failed.")
+	}
+
+	tr.checkStates(inSlice[0])
+	tr.Stock = inSlice[1]
+	tr.Exchange = inSlice[2]
+	
+	tr.Buy = inSlice[3] == "K"
+
+	tr.Count, _ = strconv.Atoi(strings.Replace(inSlice[4], " ", "", -1))
+	tr.Price, _ = strconv.ParseFloat(strings.Replace(inSlice[6], ",", ".", 1), 64)
+	tr.Currency = inSlice[7]
+
+	tr.Time, _ = time.Parse("02.01.2006 15:04:05", inSlice[11])
+
+	return nil
 }
 
 func (tr *Trade) checkStates(input string) {

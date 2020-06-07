@@ -27,32 +27,22 @@ func main() {
 	scanner := bufio.NewScanner(file)
 
 	scanner.Scan()
-	if !strings.Contains(scanner.Text(), "mBank S.A.") {
-		log.Fatal("Nie rozpoznano pierwszej linijki pliku, czy to właściwy plik?")
-	}
-
-	// zmienna, która powie nam że następna linijka to nazwisko
-	var nameNext bool
-	// pętla w której szukamy imienia w pliku
-	for scanner.Scan() {
-		if nameNext {
-			fmt.Printf("Cześć %s\n\n", scanner.Text())
-			break
-		}
-
-		if !nameNext && strings.Contains(scanner.Text(), "nazwisko") {
-			nameNext = true
-		}
-	}
 
 	var tradesNext bool
+	var trade Trade
+
 	trades := []Trade{}
 
 	// pętla w której szukamy transakcji
 	for scanner.Scan() {
 		
 		if tradesNext {
-			trades = append(trades, NewTrade(scanner.Text()))
+			trade, err = NewTrade(scanner.Text())
+			if err != nil {
+				log.Print(err)
+			} else {
+				trades = append(trades, trade)
+			}
 		}
 
 		if strings.Contains(scanner.Text(), "Stan;Walor;") {

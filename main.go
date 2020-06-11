@@ -5,24 +5,61 @@ import (
     "fmt"
     "log"
     "os"
+    "io/ioutil"
     "strings"
     "sort"
 )
 
 
 func main() {
-	fmt.Println("mtrades")
+	fmt.Printf("##\n#mtrades\n##\n")
 	fmt.Println("szukam pliku wyeksportowanego z eMaklera do pliku csv")
 
-	file, err := os.Open("./eMakler_historia_zlecen.Csv")
+    files, err := ioutil.ReadDir(".")
+    if err != nil {
+    	log.Println("Nieudany odczyt folderu:")
+        log.Fatal(err)
+    }
+
+    var csvs []string
+    for _, file := range files {
+        if strings.HasSuffix(strings.ToLower(file.Name()), ".csv") {
+        	csvs = append(csvs, file.Name())
+        }
+    }
+
+    var whichCsv int
+
+    if len(csvs) == 0 {
+    	log.Fatal("Nie odnaleziono żadnego pliku .csv w tym folderze :( ")
+    }
+
+    if len(csvs) > 1 {
+    	fmt.Println("Odnaleziono więcej niż jeden plik .csv")
+    	fmt.Println("Wybierz który otworzyć, wpisz odpowiednią liczbę i wciśnij [enter]:")
+    	for count, name := range(csvs) {
+    		fmt.Printf("%d - %s\n", count, name)
+    	}
+    	n, err := fmt.Scan(&whichCsv)
+    	if n != 1 || err != nil {
+    		log.Fatal("Błąd odczytywania wybranego numeru.")
+    	}
+    	if whichCsv >= len(csvs) {
+    		log.Fatal("Wpisano zły numer, spróbuj ponownie uruchomić program.")
+    	}
+    }
+
+    fmt.Printf("Otwieram plik: %s\n\n", csvs[whichCsv])
+
+	file, err := os.Open("./" + csvs[whichCsv])
 	if err != nil {
-		log.Println("Nie udało mi się otworzyć pliku, czy znajduje się w tym samym folderze?")
+		log.Println("Nie udało mi się otworzyć pliku:")
 		log.Fatal(err)
 	}
 
 	defer file.Close()
 
-	fmt.Printf("Plik znaleziony, czytam zawartość...\n\n")
+	fmt.Printf("Plik otwarty, czytam zawartość...\n\n")
 
 	scanner := bufio.NewScanner(file)
 

@@ -63,8 +63,6 @@ func main() {
 
 	scanner := bufio.NewScanner(file)
 
-	scanner.Scan()
-
 	var tradesNext bool
 	var trade Trade
 

@@ -33,9 +33,10 @@ func (rt *RoundTrade) FirstBuyDays() float64  {
 }
 
 func (rt *RoundTrade) PrintLine() {
-	fmt.Printf("%d\t%s %.2f\t%.2f (%.2f)\t%.2f %%\t%.2f %%/d\n", 
+	fmt.Printf("%d\t%s [%.2f]\t%.2f\t%.2f (%.2f)\t%.2f %%\t%.2f %%/d\n", 
 		rt.Sold.Count, 
 		rt.Sold.Currency, 
+		rt.Sold.Price,
 		rt.Result(), 
 		rt.LastBuyDays(), 
 		rt.FirstBuyDays(), 

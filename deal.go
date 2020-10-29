@@ -87,6 +87,8 @@ func (dl *Deal) PrintAll() {
 	for _, round := range(rounds) {
 		round.PrintLine()
 	}
+
+	fmt.Prntf("\nŚrednica cena sprzedaży: %.2f\n", dl.AverageSellPrice())
 	fmt.Printf("\n#\t#\n")
 }
 
@@ -156,4 +158,19 @@ func (dl *Deal) RoundTrades() (rounds []*RoundTrade) {
 	}
 
 	return
+}
+
+func (dl *Deal) AverageSellPrice() float64 {
+	
+	var totalCashFlow float64
+	totalCount := 0
+
+	for _, trade := range dl.Trades {
+		if !trade.Buy && trade.Realised {
+			totalCashFlow += trade.CashFlow()
+			totalCount += trade.Count
+		}
+	}
+
+	return totalCashFlow / float64(totalCount)
 }

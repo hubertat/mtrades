@@ -124,6 +124,62 @@ func main() {
 		allRounds = append(allRounds, deal.RoundTrades()...)
 	}
 
+
+	fmt.Printf("\nPosiadane akcje, wybierz nr do symulacji:\n0 - zakończ bez symulacji\n")
+	var iter int
+	unfinishedDeals := map[int]Deal{}
+	for _, deal := range(deals) {
+		if amount := deal.countStock(); amount > 0 {
+			iter++
+			fmt.Printf("%d - %s [%d]\n", iter, deal.Stock, amount)
+			unfinishedDeals[iter] = deal
+		}
+	}
+
+	var whichDeal int
+	n, err := fmt.Scan(&whichDeal)
+	if err != nil || n != 1 {
+		log.Fatal("Błąd odczytywania wybranego numeru.")
+	}
+
+	for whichDeal > 0 && whichDeal <= iter {
+		deal := unfinishedDeals[whichDeal]
+		amount := deal.countStock()
+		fmt.Printf("Wybrano: %s, liczba akcji: %d\nWpisz docelowy kurs sprzedaży: \n", deal.Stock, amount)
+		var targetPrice float64
+		n, err = fmt.Scan(&targetPrice)
+		if n != 1 || err != nil {
+			log.Fatal("Błąd odczytywania ceny/kursu!")
+		}
+		simulatedSell := Trade{}
+		simulatedSell.Realised = true
+		simulatedSell.Stock = deal.Stock
+		simulatedSell.Currency = deal.Currency
+		simulatedSell.Exchange = deal.Exchange
+		simulatedSell.Count = amount
+		simulatedSell.Price = targetPrice
+		simulatedSell.Time = time.Now()
+		deal.Trades = append(deal.Trades, simulatedSell)
+		fmt.Printf("\nDodano symulowaną transkakcję sprzedaży, wynik:\n")
+		deal.PrintAll()
+
+		fmt.Printf("\nPosiadane akcje, wybierz nr do symulacji:\n0 - zakończ\n")
+		for _, deal := range(deals) {
+			if amount := deal.countStock(); amount > 0 {
+				iter++
+				fmt.Printf("%d - %s [%d]\n", iter, deal.Stock, amount)
+				unfinishedDeals[iter] = deal
+			}
+		}
+
+
+		n, err := fmt.Scan(&whichDeal)
+		if err != nil || n != 1 {
+			log.Fatal("Błąd odczytywania wybranego numeru.")
+		}
+
+	}
+
 	sort.Slice(allRounds, func(i, j int) bool {
 		return allRounds[i].PercentResult() <  allRounds[j].PercentResult()
 	})
@@ -146,46 +202,6 @@ func main() {
 	fmt.Printf("\nWynik zamkniętych transakcji:\n")
 	for currency, score := range(finishedCashFlow) {
 		fmt.Printf("%.2f\t%s\n", score, currency)
-	}
-
-	fmt.Printf("\nPosiadane akcje, wybierz nr do symulacji:\n0 - zakończ\n")
-	iter := 0
-	unfinishedDeals := map[int]Deal{}
-	for _, deal := range(deals) {
-		if amount := deal.countStock(); amount > 0 {
-			iter++
-			fmt.Printf("%d - %s [%d]\n", iter, deal.Stock, amount)
-			unfinishedDeals[iter] = deal
-		}
-	}
-
-	var whichDeal int
-	n, err := fmt.Scan(&whichDeal)
-	if err != nil || n != 1 {
-		log.Fatal("Błąd odczytywania wybranego numeru.")
-	}
-
-	if whichDeal > 0 && whichDeal <= iter {
-		deal := unfinishedDeals[whichDeal]
-		amount := deal.countStock()
-		fmt.Printf("Wybrano: %s, liczba akcji: %d\nWpisz docelowy kurs sprzedaży: \n", deal.Stock, amount)
-		var targetPrice float64
-		n, err = fmt.Scan(&targetPrice)
-		if n != 1 || err != nil {
-			log.Fatal("Błąd odczytywania ceny/kursu!")
-		}
-		simulatedSell := Trade{}
-		simulatedSell.Realised = true
-		simulatedSell.Stock = deal.Stock
-		simulatedSell.Currency = deal.Currency
-		simulatedSell.Exchange = deal.Exchange
-		simulatedSell.Count = amount
-		simulatedSell.Price = targetPrice
-		simulatedSell.Time = time.Now()
-		deal.Trades = append(deal.Trades, simulatedSell)
-		fmt.Printf("\nDodano symulowaną transkakcję sprzedaży, wynik:\n")
-		deal.PrintAll()
-
 	}
 	
     fmt.Printf("\n\nkoniec#!")
